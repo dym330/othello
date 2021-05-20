@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import styled from 'styled-components';
 
 // components
@@ -26,6 +26,7 @@ const BoardWrapper = styled.div`
 
 
 export const Othellos = () => {
+  // 盤上を管理
   const initializeArray = ["","","","","","","","",
                            "","","","","","","","",
                            "","","","","","","","",
@@ -35,7 +36,9 @@ export const Othellos = () => {
                            "","","","","","","","",
                            "","","","","","","","",]
   const [pieces, setPieces] = useState(initializeArray);
+  // 手番の状態を管理
   const [gameState, setGameState] = useState(true);
+  // ゲームが終了状態か否かを管理
   const [endState, setEndState] = useState(0);
 
   // 引数の場所を黒にして、ゲームの状態を変更する(引数は配列型)
@@ -75,7 +78,6 @@ export const Othellos = () => {
       changeWhitePiece(changeArray);
     }
     setEndState(0);
-    console.log(endState);
     setGameState(!gameState);
   }
 
@@ -120,7 +122,7 @@ export const Othellos = () => {
   }
 
   //引数の場所においた場合に、どの駒が変化するかを配列にて返す（配列には引数も含まれる）
-  const checkReturn = (i) => {
+  const checkReturn = useCallback((i) => {
     const myselfPiece = gameState ? "●" : "○"
     const opponentPiece = gameState ? "○" : "●"
     const searchArray = [8, -8, 7, -7, 9, -9, 1, -1]
@@ -147,10 +149,10 @@ export const Othellos = () => {
       }
     }
     return changeArray
-  }
+  },[pieces, gameState])
 
   // 与えられた文字列がpiecesのどこに入っているかを配列で返す
-  const piecesCountString = (countString) => {
+  const piecesCountString = useCallback((countString) => {
     let stringArray = [];
     pieces.forEach((piece, index) => {
       if (piece === countString) {
@@ -158,8 +160,9 @@ export const Othellos = () => {
       }
     })
     return stringArray;
-  }
+  },[pieces])
 
+  // 相手番に移った際に相手が行動可能かを確認し、できない場合は自分番に変更
   useEffect(() => {
     const checkArray = piecesCountString("");
     let count = 0;
@@ -168,7 +171,7 @@ export const Othellos = () => {
         count += 1
       }
     })
-    if (count === checkArray.length) {
+    if (count === checkArray.length && endState < 3) {
       let endcopy = endState
       endcopy += 1
       setEndState(endcopy);
@@ -176,8 +179,9 @@ export const Othellos = () => {
         setGameState(!gameState);
       }
     }
-  },[gameState]);
+  },[gameState, piecesCountString, checkReturn, endState]);
 
+  // 勝者を表示するための処理、endStateが２以上のときは、両者とも置く場所がなくなっている状態＝ゲーム終了
   useEffect(() => {
     if (endState < 2) {
       return;
@@ -192,7 +196,7 @@ export const Othellos = () => {
       winner = "○"
     }
     document.getElementById("check").innerHTML = `勝者は${winner}です`
-  },[endState]);
+  },[endState, piecesCountString]);
 
   return (
     <React.Fragment>
@@ -206,7 +210,6 @@ export const Othellos = () => {
             )
           }
         </BoardWrapper>
-        <button onClick={() => console.log(endState)}>aaaa</button>
       </MainWrapper>
     </React.Fragment>
   )
