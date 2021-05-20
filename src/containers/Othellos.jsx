@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components';
 
 // components
@@ -36,6 +36,7 @@ export const Othellos = () => {
                            "","","","","","","","",]
   const [pieces, setPieces] = useState(initializeArray);
   const [gameState, setGameState] = useState(true);
+  const [endState, setEndState] = useState(0);
 
   // 引数の場所を黒にして、ゲームの状態を変更する(引数は配列型)
   const changeBlackPiece = (changeArray) => {
@@ -57,18 +58,24 @@ export const Othellos = () => {
 
   // マスをクリックした際の挙動
   const squareClick = (i) => {
+    // 既に駒が置いている箇所の場合は早期リターン
     if (pieces[i]) {
       return;
     }
+
     const changeArray = checkReturn(i);
+    // オセロのルール上置けない場所の場合は早期リターン
     if (changeArray.length === 1) {
       return;
     }
+
     if (gameState === true) {
       changeBlackPiece(changeArray);
     } else {
       changeWhitePiece(changeArray);
     }
+    setEndState(0);
+    console.log(endState);
     setGameState(!gameState);
   }
 
@@ -142,9 +149,56 @@ export const Othellos = () => {
     return changeArray
   }
 
+  // 与えられた文字列がpiecesのどこに入っているかを配列で返す
+  const piecesCountString = (countString) => {
+    let stringArray = [];
+    pieces.forEach((piece, index) => {
+      if (piece === countString) {
+        stringArray.push(index)
+      }
+    })
+    return stringArray;
+  }
+
+  useEffect(() => {
+    const checkArray = piecesCountString("");
+    let count = 0;
+    checkArray.forEach((check) => {
+      if (checkReturn(check).length === 1) {
+        count += 1
+      }
+    })
+    if (count === checkArray.length) {
+      let endcopy = endState
+      endcopy += 1
+      setEndState(endcopy);
+      if (endcopy < 2) {
+        setGameState(!gameState);
+      }
+    }
+  },[gameState]);
+
+  useEffect(() => {
+    if (endState < 2) {
+      return;
+    }
+
+    let winner = ""
+    const blackPiecesCount = piecesCountString("●").length
+    const whitePiecesCount = piecesCountString("○").length
+    if (blackPiecesCount > whitePiecesCount) {
+      winner = "●"
+    } else {
+      winner = "○"
+    }
+    document.getElementById("check").innerHTML = `勝者は${winner}です`
+  },[endState]);
+
   return (
     <React.Fragment>
       <MainWrapper>
+        <p id="check">現在の手番は{ gameState ? "●" : "○" }です</p>
+        <p>●の数:{piecesCountString("●").length}個    ○の数:{piecesCountString("○").length}個</p>
         <BoardWrapper>
           {
             pieces.map((piece, index) =>
@@ -152,8 +206,7 @@ export const Othellos = () => {
             )
           }
         </BoardWrapper>
-        <button onClick={() => console.log(pieces)}>aaaaaaaaaa</button>
-        <button onClick={() => checkReturn()}>asasasa</button>
+        <button onClick={() => console.log(endState)}>aaaa</button>
       </MainWrapper>
     </React.Fragment>
   )
