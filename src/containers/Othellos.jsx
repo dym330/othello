@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { OthelloSquare } from '../components/OthelloSquare'
 
 // constants
-import { COLORS } from '../style_constants'
+import { COLORS, FONT_SIZE } from '../style_constants'
 
 const MainWrapper = styled.div`
   height: 100vh;
@@ -22,6 +22,23 @@ const BoardWrapper = styled.div`
   border: 1px solid black;
   display: flex;
   flex-wrap: wrap;
+`;
+
+const AutoButton = styled.button`
+  display: inline-block;
+  padding: 0.3em 1em;
+  text-decoration: none;
+  color: white;
+  background-color: #23582a;
+  border: solid 2px #23582a;
+  border-radius: 3px;
+  transition: .4s;
+  margin-top: 30px;
+  font-size: ${ FONT_SIZE.MAIN_BUTTON };
+  &:hover {
+    background: #2d7236;
+    color: white;
+  }
 `;
 
 
@@ -79,6 +96,22 @@ export const Othellos = () => {
     }
     setEndState(0);
     setGameState(!gameState);
+  }
+
+  //ランダムで指してくれる
+  const autoPiecePlacement = () => {
+    const checkArray = piecesCountString("");
+    if (checkArray.length === 0){
+      return;
+    }
+    let placeToPutPiecesArray = [];
+    checkArray.forEach((check) => {
+      if (checkReturn(check).length > 1) {
+        placeToPutPiecesArray.push(check);
+      }
+    })
+    const randamSelect = placeToPutPiecesArray[Math.floor(Math.random() * placeToPutPiecesArray.length)];
+    squareClick(randamSelect);
   }
 
   // 検査対象が駒を配置していい場所かの確認
@@ -210,6 +243,7 @@ export const Othellos = () => {
             )
           }
         </BoardWrapper>
+        <AutoButton onClick={() => autoPiecePlacement()}>自動</AutoButton>
       </MainWrapper>
     </React.Fragment>
   )
