@@ -224,11 +224,13 @@ export const Othellos = () => {
     const blackPiecesCount = piecesCountString("●").length
     const whitePiecesCount = piecesCountString("○").length
     if (blackPiecesCount > whitePiecesCount) {
-      winner = "●"
+      winner = "勝者は●です"
+    } else if (blackPiecesCount === whitePiecesCount) {
+      winner ="引き分けです"
     } else {
-      winner = "○"
+      winner = "勝者は○です"
     }
-    document.getElementById("check").innerHTML = `勝者は${winner}です`
+    document.getElementById("check").innerHTML = winner
   },[endState, piecesCountString]);
 
   return (
